@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>لوحة التحكم</title>
 
   <!-- Bootstrap RTL -->
@@ -18,6 +18,7 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      margin: 0;
     }
     header {
       background: #4e73df;
@@ -27,12 +28,19 @@
       justify-content: space-between;
       align-items: center;
     }
-    header h1 { font-size: 1.5rem; margin: 0; }
-    #logoutBtn { color: #fff; }
+    header h1 {
+      font-size: 1.5rem;
+      margin: 0;
+    }
+    #logoutBtn {
+      color: #fff;
+      text-decoration: none;
+    }
     #spinnerOverlay {
       position: fixed;
       top: 0; left: 0;
-      width: 100%; height: 100%;
+      width: 100%;
+      height: 100%;
       background: rgba(255,255,255,0.8);
       display: flex;
       justify-content: center;
@@ -51,7 +59,7 @@
 </head>
 <body>
 
-  <!-- سبينر -->
+  <!-- سبينر على كامل الصفحة -->
   <div id="spinnerOverlay">
     <div class="spinner-border" role="status">
       <span class="visually-hidden">جاري التحميل...</span>
@@ -61,39 +69,40 @@
   <!-- هيدر -->
   <header>
     <h1>برنامج التعليم الإلكتروني</h1>
-    <button id="logoutBtn" class="btn btn-link">تسجيل الخروج</button>
+    <a href="#" id="logoutBtn" class="btn btn-link">تسجيل الخروج</a>
   </header>
 
-  <!-- المحتوى -->
+  <!-- المحتوى الرئيسي -->
   <main>
     <div class="container">
       <div class="card card-custom p-4">
         <h2 id="greeting">مرحبا، ...</h2>
         <p>معرّف المستخدم: <span id="userIdDisplay">--</span></p>
-        <!-- محتوى الداشبورد -->
+        <!-- هنا يمكن إضافة أي مكونات داشبورد أخرى -->
       </div>
     </div>
   </main>
 
+  <!-- سكربت ESM من jsDelivr لدعم CORS -->
   <script type="module">
     import { Amplify, Auth }
-      from 'https://unpkg.com/aws-amplify@5.0.3/dist/aws-amplify.esm.js';
+      from 'https://cdn.jsdelivr.net/npm/aws-amplify@5.0.3/dist/aws-amplify.esm.js';
 
-    // تهيئة Amplify
+    // تكوين AWS Amplify
     Amplify.configure({
       Auth: {
         region: 'us-east-1',
         userPoolId: 'us-east-1_Qqvl7pZoC',
         userPoolWebClientId: '36566jm8nh7ngc06eciamj18pd',
-        mandatorySignIn: true,
+        mandatorySignIn: true
       }
     });
 
-    // رابط Hosted UI (صحّحت الـunderscore)
-    const HOSTED_UI = 
+    // رابط Hosted UI (صحّحنا الـ underscore في الـ domain)
+    const HOSTED_UI =
       'https://us-east-1_Qqvl7pZoC.auth.us-east-1.amazoncognito.com/login'
       + '?client_id=36566jm8nh7ngc06eciamj18pd'
-      + '&redirect_uri=https%3A%2F%2Fomardevolber.github.io%2Fmr-islam-acadmy%2F'
+      + '&redirect_uri=' + encodeURIComponent('https://omardevolber.github.io/mr-islam-acadmy/')
       + '&response_type=code'
       + '&scope=openid+email+phone';
 
@@ -102,25 +111,23 @@
         const user = await Auth.currentAuthenticatedUser();
         const userId = user.username;
         sessionStorage.setItem('userId', userId);
-        document.getElementById('greeting')
-                .textContent = `مرحبا، ${userId}`;
-        document.getElementById('userIdDisplay')
-                .textContent = userId;
+
+        document.getElementById('greeting').textContent = `مرحبا، ${userId}`;
+        document.getElementById('userIdDisplay').textContent = userId;
       } catch {
-        // غير مسجل → Hosted UI
+        // لو ليس هناك مستخدم مسجل → انتقل إلى Hosted UI
         window.location.href = HOSTED_UI;
       } finally {
-        document.getElementById('spinnerOverlay')
-                .style.display = 'none';
+        document.getElementById('spinnerOverlay').style.display = 'none';
       }
     }
 
-    document.getElementById('logoutBtn')
-      .addEventListener('click', async () => {
-        await Auth.signOut();
-        sessionStorage.clear();
-        window.location.href = HOSTED_UI;
-      });
+    document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+      e.preventDefault();
+      await Auth.signOut();
+      sessionStorage.clear();
+      window.location.href = HOSTED_UI;
+    });
 
     window.addEventListener('DOMContentLoaded', initDashboard);
   </script>
