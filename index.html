@@ -58,7 +58,7 @@
 </head>
 <body>
 
-  <!-- سبينر على كامل الصفحة -->
+  <!-- سبينر -->
   <div id="spinnerOverlay">
     <div class="spinner-border" role="status">
       <span class="visually-hidden">جاري التحميل...</span>
@@ -77,15 +77,16 @@
       <div class="card card-custom p-4">
         <h2 id="greeting">مرحبا، ...</h2>
         <p>معرّف المستخدم: <span id="userIdDisplay">--</span></p>
-        <!-- هنا تضيف مكونات الداشبورد -->
+        <!-- أضف هنا باقي مكونات الداشبورد -->
       </div>
     </div>
   </main>
 
-  <!-- استيراد Amplify عبر Skypack لتجنّب CORS -->
-  <script type="module">
-    import { Amplify, Auth }
-      from 'https://cdn.skypack.dev/aws-amplify@5.0.3';
+  <!-- تحميل UMD build من Amplify v4.x (يحوي window.aws_amplify) -->
+  <script src="https://cdn.jsdelivr.net/npm/aws-amplify@4.3.17/dist/aws-amplify.min.js"></script>
+  <script>
+    // فك التجميعة من global
+    const { Amplify, Auth } = window.aws_amplify;
 
     // تهيئة Amplify
     Amplify.configure({
@@ -97,7 +98,7 @@
       }
     });
 
-    // رابط Hosted UI بعد تصحيح الـ underscore
+    // رابط Hosted UI (صحح underscore)
     const HOSTED_UI =
       'https://us-east-1_Qqvl7pZoC.auth.us-east-1.amazoncognito.com/login'
       + '?client_id=36566jm8nh7ngc06eciamj18pd'
@@ -110,16 +111,14 @@
         const user = await Auth.currentAuthenticatedUser();
         const userId = user.username;
         sessionStorage.setItem('userId', userId);
-        document.getElementById('greeting')
-                .textContent = `مرحبا، ${userId}`;
-        document.getElementById('userIdDisplay')
-                .textContent = userId;
+
+        document.getElementById('greeting').textContent = `مرحبا، ${userId}`;
+        document.getElementById('userIdDisplay').textContent = userId;
       } catch {
-        // لو غير مسجّل دخول يوجّه للـ Hosted UI
+        // غير مسجل دخول → احاله للـ Hosted UI
         window.location.href = HOSTED_UI;
       } finally {
-        document.getElementById('spinnerOverlay')
-                .style.display = 'none';
+        document.getElementById('spinnerOverlay').style.display = 'none';
       }
     }
 
