@@ -51,7 +51,7 @@
 </head>
 <body>
 
-  <!-- سبينر على كامل الصفحة -->
+  <!-- سبينر -->
   <div id="spinnerOverlay">
     <div class="spinner-border" role="status">
       <span class="visually-hidden">جاري التحميل...</span>
@@ -64,57 +64,64 @@
     <button id="logoutBtn" class="btn btn-link">تسجيل الخروج</button>
   </header>
 
-  <!-- المحتوى الرئيسي -->
+  <!-- المحتوى -->
   <main>
     <div class="container">
       <div class="card card-custom p-4">
         <h2 id="greeting">مرحبا، ...</h2>
         <p>معرّف المستخدم: <span id="userIdDisplay">--</span></p>
-        <!-- هنا تحط محتوى الداشبورد الفعلي -->
+        <!-- محتوى الداشبورد -->
       </div>
     </div>
   </main>
 
-  <!-- AWS Amplify JS -->
-  <script src="https://unpkg.com/aws-amplify@5.0.3/dist/aws-amplify.min.js"></script>
-  <script>
-    const { Amplify, Auth } = window.aws_amplify;
+  <script type="module">
+    import { Amplify, Auth }
+      from 'https://unpkg.com/aws-amplify@5.0.3/dist/aws-amplify.esm.js';
 
+    // تهيئة Amplify
     Amplify.configure({
       Auth: {
         region: 'us-east-1',
         userPoolId: 'us-east-1_Qqvl7pZoC',
         userPoolWebClientId: '36566jm8nh7ngc06eciamj18pd',
-        mandatorySignIn: true
+        mandatorySignIn: true,
       }
     });
+
+    // رابط Hosted UI (صحّحت الـunderscore)
+    const HOSTED_UI = 
+      'https://us-east-1_Qqvl7pZoC.auth.us-east-1.amazoncognito.com/login'
+      + '?client_id=36566jm8nh7ngc06eciamj18pd'
+      + '&redirect_uri=https%3A%2F%2Fomardevolber.github.io%2Fmr-islam-acadmy%2F'
+      + '&response_type=code'
+      + '&scope=openid+email+phone';
 
     async function initDashboard() {
       try {
         const user = await Auth.currentAuthenticatedUser();
         const userId = user.username;
-        // خزن في sessionStorage
         sessionStorage.setItem('userId', userId);
-
-        // اعرض البيانات
-        document.getElementById('greeting').textContent = `مرحبا، ${user.username}`;
-        document.getElementById('userIdDisplay').textContent = userId;
-      } catch (err) {
-        // لو مو مسجل دخول رحّله للصفحة الرئيسية
-        window.location.href = 'login.html';
+        document.getElementById('greeting')
+                .textContent = `مرحبا، ${userId}`;
+        document.getElementById('userIdDisplay')
+                .textContent = userId;
+      } catch {
+        // غير مسجل → Hosted UI
+        window.location.href = HOSTED_UI;
       } finally {
-        // إخفاء السبينر
-        document.getElementById('spinnerOverlay').style.display = 'none';
+        document.getElementById('spinnerOverlay')
+                .style.display = 'none';
       }
     }
 
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
-      await Auth.signOut();
-      sessionStorage.clear();
-      window.location.href = 'login.html';
-    });
+    document.getElementById('logoutBtn')
+      .addEventListener('click', async () => {
+        await Auth.signOut();
+        sessionStorage.clear();
+        window.location.href = HOSTED_UI;
+      });
 
-    // ابدأ مباشرةً عند تحميل الصفحة
     window.addEventListener('DOMContentLoaded', initDashboard);
   </script>
 </body>
