@@ -39,8 +39,7 @@
     #spinnerOverlay {
       position: fixed;
       top: 0; left: 0;
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       background: rgba(255,255,255,0.8);
       display: flex;
       justify-content: center;
@@ -78,17 +77,17 @@
       <div class="card card-custom p-4">
         <h2 id="greeting">مرحبا، ...</h2>
         <p>معرّف المستخدم: <span id="userIdDisplay">--</span></p>
-        <!-- هنا يمكن إضافة أي مكونات داشبورد أخرى -->
+        <!-- هنا تضيف مكونات الداشبورد -->
       </div>
     </div>
   </main>
 
-  <!-- سكربت ESM من jsDelivr لدعم CORS -->
+  <!-- استيراد Amplify عبر Skypack لتجنّب CORS -->
   <script type="module">
     import { Amplify, Auth }
-      from 'https://cdn.jsdelivr.net/npm/aws-amplify@5.0.3/dist/aws-amplify.esm.js';
+      from 'https://cdn.skypack.dev/aws-amplify@5.0.3';
 
-    // تكوين AWS Amplify
+    // تهيئة Amplify
     Amplify.configure({
       Auth: {
         region: 'us-east-1',
@@ -98,7 +97,7 @@
       }
     });
 
-    // رابط Hosted UI (صحّحنا الـ underscore في الـ domain)
+    // رابط Hosted UI بعد تصحيح الـ underscore
     const HOSTED_UI =
       'https://us-east-1_Qqvl7pZoC.auth.us-east-1.amazoncognito.com/login'
       + '?client_id=36566jm8nh7ngc06eciamj18pd'
@@ -111,23 +110,26 @@
         const user = await Auth.currentAuthenticatedUser();
         const userId = user.username;
         sessionStorage.setItem('userId', userId);
-
-        document.getElementById('greeting').textContent = `مرحبا، ${userId}`;
-        document.getElementById('userIdDisplay').textContent = userId;
+        document.getElementById('greeting')
+                .textContent = `مرحبا، ${userId}`;
+        document.getElementById('userIdDisplay')
+                .textContent = userId;
       } catch {
-        // لو ليس هناك مستخدم مسجل → انتقل إلى Hosted UI
+        // لو غير مسجّل دخول يوجّه للـ Hosted UI
         window.location.href = HOSTED_UI;
       } finally {
-        document.getElementById('spinnerOverlay').style.display = 'none';
+        document.getElementById('spinnerOverlay')
+                .style.display = 'none';
       }
     }
 
-    document.getElementById('logoutBtn').addEventListener('click', async (e) => {
-      e.preventDefault();
-      await Auth.signOut();
-      sessionStorage.clear();
-      window.location.href = HOSTED_UI;
-    });
+    document.getElementById('logoutBtn')
+      .addEventListener('click', async (e) => {
+        e.preventDefault();
+        await Auth.signOut();
+        sessionStorage.clear();
+        window.location.href = HOSTED_UI;
+      });
 
     window.addEventListener('DOMContentLoaded', initDashboard);
   </script>
